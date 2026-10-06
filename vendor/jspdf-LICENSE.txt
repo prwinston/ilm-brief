@@ -1,7 +1,0 @@
-jsPDF is bundled here (vendor/jspdf.umd.min.js) so the PDF download works
-offline with no external CDN dependency. It is used unmodified.
-
-Copyright (c) 2010-2021 James Hall, https://github.com/MrRio/jsPDF
-Copyright (c) 2015-2021 yWorks GmbH, https://www.yworks.com/
-Licensed under the MIT License. Full text: https://github.com/parallax/jsPDF/blob/master/LICENSE
-Version: 2.5.2 — https://www.npmjs.com/package/jspdf

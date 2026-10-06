@@ -1,3 +1,17 @@
-.DS_Store
+# Dependencies (only if you add tooling later)
 node_modules/
+
+# Wrangler / Cloudflare
 .wrangler/
+.dev.vars
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*

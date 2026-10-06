@@ -1,10 +1,7 @@
-name = "biblical-eq-assessment"
-compatibility_date = "2026-09-19"
+name = "ilm-brief"
+compatibility_date = "2026-10-06"
 
-# This is a plain static site (no build step, no Worker script) — served
-# directly from the repo root as static assets. This config works with
-# `npx wrangler deploy` (Cloudflare's Git-connected "Workers Builds" runs
-# that command by default, even for a static-only project) and does NOT
-# need `wrangler pages deploy`.
+# Static site served by Cloudflare Workers (static assets, no Worker script).
+# Everything in ./public is uploaded and served as-is; _headers is honoured.
 [assets]
-directory = "."
+directory = "./public"

@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interior Life Mapping · Brief Edition — A Self-Reflection Map</title>
+<meta name="description" content="Interior Life Mapping, Brief Edition: a ten-minute self-reflection map of your interior life across five rooms, from the mirror to the door. A companion to Emotionally Whole.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B2A2E;          /* deep ink-teal — interior at dusk */
+    --ink-soft:#33474C;
+    --paper:#ECEAE1;        /* cool bone reading surface */
+    --paper-lift:#F5F3EC;   /* raised card surface */
+    --stone:#CBC6B8;        /* muted borders/lines */
+    --stone-soft:#DDD9CD;
+    --brass:#A9853F;        /* single warm accent */
+    --brass-deep:#8A6B2E;
+    --text:#22282A;
+    --text-mute:#5C6461;
+    --text-faint:#8A8F89;
+    /* room hues — used only as identifiers */
+    --mirror:#2F80C0;
+    --furnace:#E2582B;
+    --ruins:#C08F12;
+    --border:#2E9E68;
+    --door:#8A4FC2;
+    --shadow:0 1px 2px rgba(27,42,46,.06), 0 8px 30px rgba(27,42,46,.07);
+    --serif:'Fraunces', Georgia, 'Times New Roman', serif;
+    --sans:'Hanken Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0; background:var(--paper); color:var(--text);
+    font-family:var(--sans); font-size:19.5px; line-height:1.6;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  }
+  .wrap{max-width:760px; margin:0 auto; padding:0 24px;}
+  h1,h2,h3{font-family:var(--serif); font-weight:500; line-height:1.12; margin:0;}
+  em, .italic{font-style:italic;}
+  button{font-family:var(--sans); cursor:pointer;}
+  .screen{display:none; animation:fade .5s ease both;}
+  .screen.active{display:block;}
+  @keyframes fade{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+  @media (prefers-reduced-motion: reduce){ .screen{animation:none;} * {transition:none !important;} }
+
+  /* ---------- Threshold map (progress) ---------- */
+  .threshold{display:flex; align-items:center; gap:0; margin:0 auto; max-width:520px;}
+  .thr-node{flex:1; display:flex; flex-direction:column; align-items:center; gap:7px; position:relative;}
+  .thr-node::before{content:""; position:absolute; top:14px; left:-50%; width:100%; height:1.5px; background:var(--stone); z-index:0;}
+  .thr-node:first-child::before{display:none;}
+  .thr-node .dot{width:13px; height:13px; border-radius:50%; background:var(--paper); border:1.5px solid var(--stone); z-index:1; transition:all .35s ease;}
+  .thr-node .lbl{font-size:12.5px; letter-spacing:.02em; color:var(--text-faint); white-space:nowrap; transition:color .35s ease;}
+  .thr-node.done .dot{background:var(--brass); border-color:var(--brass);}
+  .thr-node.done::before{background:var(--brass);}
+  .thr-node.current .dot{background:var(--paper); border-color:var(--brass); box-shadow:0 0 0 4px rgba(169,133,63,.16);}
+  .thr-node.current .lbl{color:var(--ink); font-weight:600;}
+
+  /* ---------- Room icons ---------- */
+  .badge{display:inline-flex; align-items:center; justify-content:center; border-radius:50%; flex:none; box-shadow:0 2px 6px rgba(0,0,0,.18); -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+  .badge svg{display:block;}
+  .thr-node .badge{z-index:1; transition:all .35s ease;}
+  .thr-node:not(.done):not(.current) .badge{filter:grayscale(1); opacity:.4; box-shadow:none;}
+  .thr-node.current .badge{box-shadow:0 0 0 4px rgba(169,133,63,.25), 0 2px 6px rgba(0,0,0,.18); transform:scale(1.12);}
+  .dh-top{display:flex; align-items:center; gap:16px;}
+  .domain-head .verse .ref{background:none; padding:0; border-radius:0; margin-top:6px; color:inherit;}
+  .domain-head{text-shadow:0 1px 2px rgba(0,0,0,.22);}
+  .dtitle{display:flex; align-items:center; gap:14px;}
+  .hero .rooms .rm{display:inline-flex; align-items:center; gap:8px;}
+
+  /* ---------- Welcome ---------- */
+  .hero{background:var(--ink); color:#EDECE4; border-radius:14px; padding:52px 40px 44px; margin-top:40px; box-shadow:var(--shadow); position:relative; overflow:hidden;}
+  .hero .eyebrow{font-family:var(--serif); font-style:italic; font-size:20.5px; color:#C9B98F; margin-bottom:18px;}
+  .hero h1{font-size:clamp(39px,8vw,60px); color:#F6F3EA; letter-spacing:-.01em;}
+  .hero .sub{margin-top:16px; font-size:18.5px; line-height:1.55; color:#B9C2BF; max-width:44ch;}
+  .hero .rooms{margin-top:30px; display:flex; flex-wrap:wrap; gap:8px 14px; align-items:baseline; font-family:var(--serif); font-style:italic; font-size:17px; color:#8FA09C;}
+  .hero .rooms b{font-style:normal; font-weight:500; color:#DCE2DF;}
+  .hero .rooms .arw{color:#6E7C79;}
+  .byline{margin-top:34px; color:var(--text-mute); font-size:16.5px;}
+  .byline b{color:var(--text); font-weight:600;}
+  .note{margin-top:8px; font-size:16px; color:var(--text-mute);}
+
+  .card{background:var(--paper-lift); border:1px solid var(--stone-soft); border-radius:12px; padding:26px 28px; box-shadow:var(--shadow);}
+  .intro-card{margin-top:22px;}
+  .intro-card h3{font-size:23px; margin-bottom:10px;}
+  .intro-card ul{margin:14px 0 0; padding-left:20px; color:var(--text-mute); font-size:17px;}
+  .intro-card li{margin:7px 0;}
+
+  .fields{margin-top:22px; display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field.full{grid-column:1 / -1;}
+  .field label{font-size:15px; font-weight:600; color:var(--text-mute); letter-spacing:.01em;}
+  .field input, .field select{
+    font-family:var(--sans); font-size:17px; color:var(--text);
+    padding:11px 13px; border:1px solid var(--stone); border-radius:8px; background:var(--paper);
+    transition:border-color .2s ease, box-shadow .2s ease;
+  }
+  .field input:focus, .field select:focus{outline:none; border-color:var(--brass); box-shadow:0 0 0 3px rgba(169,133,63,.15);}
+
+  /* ---------- Buttons ---------- */
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:10px;
+    font-size:18.5px; font-weight:600; padding:14px 30px; border-radius:9px; border:1px solid transparent;
+    transition:transform .12s ease, background .2s ease, box-shadow .2s ease;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn-primary{background:var(--brass); color:#FBF7ED; box-shadow:0 4px 14px rgba(169,133,63,.28);}
+  .btn-primary:hover{background:var(--brass-deep);}
+  .btn-primary:disabled{background:var(--stone); color:#F5F3EC; box-shadow:none; cursor:not-allowed;}
+  .btn-ghost{background:transparent; color:var(--ink); border-color:var(--stone);}
+  .btn-ghost:hover{border-color:var(--ink); background:rgba(27,42,46,.03);}
+  .actions{display:flex; justify-content:space-between; align-items:center; gap:16px; margin-top:34px;}
+  .actions.end{justify-content:center;}
+  .actions.center{justify-content:center;}
+
+  /* ---------- Domain / items ---------- */
+  .domain-head{border-radius:12px 12px 0 0; padding:26px 28px 22px; color:#F3F0E8; position:relative; overflow:hidden;}
+  .domain-head .room-no{font-family:var(--serif); font-style:italic; font-size:17px; opacity:.85; margin-bottom:6px;}
+  .domain-head h2{font-size:clamp(30px,5.8vw,39px); letter-spacing:-.01em;}
+  .domain-head .room-name{font-family:var(--serif); font-style:italic; font-weight:400; opacity:.92; font-size:23px; margin-left:4px;}
+  .domain-head .verse{margin-top:16px; padding-top:15px; border-top:1px solid rgba(255,255,255,.22); font-family:var(--serif); font-style:italic; font-size:18.5px; line-height:1.5; color:#EDE8DA;}
+  .domain-head .verse .ref{font-style:normal; font-weight:600; font-size:15px; letter-spacing:.03em; display:block; margin-top:6px; opacity:.8;}
+
+  .scale-legend{display:flex; justify-content:space-between; gap:10px; font-size:14.5px; color:var(--text-faint); padding:14px 28px 4px; flex-wrap:wrap;}
+  .scale-legend span{white-space:nowrap;}
+
+  .items{background:var(--paper-lift); border:1px solid var(--stone-soft); border-top:none; border-radius:0 0 12px 12px; padding:6px 28px 28px; box-shadow:var(--shadow);}
+  .item{padding:22px 0; border-bottom:1px solid var(--stone-soft);}
+  .item:last-child{border-bottom:none;}
+  .item .stmt{font-size:19px; line-height:1.5; color:var(--text);}
+  .item .src{font-size:14px; color:var(--text-faint); font-style:italic; margin-top:6px;}
+  fieldset.seg{border:none; padding:0; margin:16px 0 0; display:grid; grid-template-columns:repeat(5,1fr); gap:8px;}
+  fieldset.seg legend{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0);}
+  .opt{position:relative;}
+  .opt input{position:absolute; opacity:0; width:0; height:0;}
+  .opt label{
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; text-align:center;
+    min-height:56px; padding:8px 4px; border:1px solid var(--stone); border-radius:8px; background:var(--paper);
+    font-size:14px; color:var(--text-mute); line-height:1.2; cursor:pointer;
+    transition:border-color .18s ease, background .18s ease, color .18s ease, transform .1s ease;
+  }
+  .opt label .num{font-family:var(--serif); font-size:22px; color:var(--ink); font-weight:500;}
+  .opt label:hover{border-color:var(--brass);}
+  .opt input:focus-visible + label{outline:2px solid var(--brass); outline-offset:2px;}
+  .opt input:checked + label{background:var(--ink); border-color:var(--ink); color:#DCE2DF;}
+  .opt input:checked + label .num{color:#F6F3EA;}
+  .hint{margin-top:16px; font-size:16px; color:var(--furnace); display:none;}
+  .hint.show{display:block;}
+
+  /* ---------- Results ---------- */
+  .result-hero{margin-top:40px; text-align:center;}
+  .result-hero .eyebrow{font-family:var(--serif); font-style:italic; color:var(--brass); font-size:19.5px;}
+  .result-hero h1{font-size:clamp(34.5px,6.9vw,50.5px); margin-top:8px; color:var(--ink);}
+  .result-meta{margin-top:14px; color:var(--text-mute); font-size:16.5px;}
+  .result-meta span{margin:0 9px;}
+
+  .radar-wrap{display:flex; justify-content:center; margin:30px 0 8px;}
+  svg.radar{max-width:100%; height:auto;}
+
+  .map{margin-top:34px;}
+  .map h3, .cards-sec h3, .ref h3{font-size:17px; font-family:var(--sans); font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--text-mute); margin-bottom:14px;}
+  table.mapt{width:100%; border-collapse:collapse; background:var(--paper-lift); border:1px solid var(--stone-soft); border-radius:10px; overflow:hidden; box-shadow:var(--shadow);}
+  table.mapt th, table.mapt td{text-align:left; padding:14px 16px; font-size:17px; border-bottom:1px solid var(--stone-soft);}
+  table.mapt thead th{font-size:14px; letter-spacing:.04em; text-transform:uppercase; color:var(--text-faint); font-weight:600; background:var(--paper);}
+  table.mapt tbody tr:last-child td{border-bottom:none;}
+  table.mapt .dname{display:flex; align-items:center; gap:11px;}
+  table.mapt .swatch{width:11px; height:11px; border-radius:3px; flex:none;}
+  table.mapt .sc{font-family:var(--serif); font-size:20.5px; font-weight:600;}
+  .pill{display:inline-block; font-size:14.5px; font-weight:600; padding:3px 11px; border-radius:20px; letter-spacing:.01em;}
+  .pill.Priority{background:#F3E0DA; color:#8A3F23;}
+  .pill.Developing{background:#EFE9D4; color:#7A6524;}
+  .pill.Strength{background:#DEE9E1; color:#2E5B45;}
+  .pill.Exceptional{background:#DCE4E6; color:#22484C;}
+
+  .cards-sec{margin-top:38px;}
+  .dcard{background:var(--paper-lift); border:1px solid var(--stone-soft); border-left:4px solid var(--stone); border-radius:10px; padding:22px 24px; margin-bottom:16px; box-shadow:var(--shadow);}
+  .dcard .top{display:flex; justify-content:space-between; align-items:flex-start; gap:16px;}
+  .dcard h3{font-family:var(--serif); font-size:25.5px; font-weight:500; text-transform:none; letter-spacing:0; color:var(--ink); margin:0;}
+  .dcard .room{font-family:var(--serif); font-style:italic; color:var(--text-mute); font-size:18.5px;}
+  .dcard .scorebox{text-align:right; flex:none;}
+  .dcard .scorebox .big{font-family:var(--serif); font-size:39px; font-weight:600; line-height:1; color:var(--ink);}
+  .dcard .scorebox .of{font-size:15px; color:var(--text-faint);}
+  .dcard .scorebox .raw{font-size:14.5px; color:var(--text-faint); margin-top:4px;}
+  .dcard .meter{height:7px; background:var(--stone-soft); border-radius:4px; margin:16px 0 14px; overflow:hidden;}
+  .dcard .meter .fill{height:100%; border-radius:4px; transition:width 1s cubic-bezier(.2,.7,.2,1);}
+  .dcard .band{font-size:17px; line-height:1.55; color:var(--text-mute);}
+  .dcard .band .status{font-weight:600; color:var(--text);}
+
+  .ref{margin-top:34px; background:var(--ink); color:#D7DEDB; border-radius:11px; padding:24px 26px;}
+  .ref h3{color:#B7C2BE;}
+  .ref .grid{display:grid; grid-template-columns:1fr 1fr; gap:10px 24px; font-size:16px;}
+  .ref .grid div{padding:6px 0; border-bottom:1px solid rgba(255,255,255,.1);}
+  .ref .grid b{color:#EDE8DA; font-family:var(--serif); font-weight:600;}
+  .ref .rev{margin-top:16px; font-size:15px; color:#9DA9A5; line-height:1.5;}
+
+  .disclaim{margin-top:24px; text-align:center; font-family:var(--serif); font-style:italic; color:var(--text-mute); font-size:17px; line-height:1.5;}
+  .footer{margin:40px 0 60px; text-align:center; color:var(--text-faint); font-size:15px;}
+  .footer b{color:var(--text-mute); font-weight:600;}
+
+  .prepared{margin-top:10px; font-family:var(--serif); font-style:italic; color:var(--ink-soft); font-size:20px;}
+  .prepared:empty{display:none;}
+  .save-box{margin-top:30px; background:var(--paper-lift); border:1px solid var(--stone-soft); border-top:4px solid var(--brass); border-radius:12px; padding:26px 28px; box-shadow:var(--shadow); text-align:center;}
+  .save-box h3{font-size:25px; color:var(--ink); margin-bottom:16px;}
+  .save-lbl{display:block; text-align:left; font-size:15px; font-weight:600; color:var(--text-mute); margin-bottom:6px;}
+  .save-lbl span{font-weight:400; color:var(--text-faint);}
+  #pname{width:100%; font-family:var(--sans); font-size:18px; color:var(--text); padding:13px 15px; border:1px solid var(--stone); border-radius:9px; background:var(--paper);}
+  #pname:focus{outline:none; border-color:var(--brass); box-shadow:0 0 0 3px rgba(169,133,63,.15);}
+  .save-main{width:100%; margin-top:16px; font-size:19px; padding:17px 24px;}
+  .save-alt{margin:14px 0 0; font-size:15px; color:var(--text-mute);}
+  .save-alt a{color:var(--brass-deep); font-weight:600;}
+  .save-note{margin:8px 0 0; font-size:14px; color:var(--text-faint);}
+  .print-actions{margin:30px 0 10px; display:flex; justify-content:center; gap:14px; flex-wrap:wrap;}
+
+  @media (max-width:560px){
+    body{font-size:18.5px;}
+    .hero{padding:38px 24px 32px;}
+    .card, .items, .domain-head{padding-left:20px; padding-right:20px;}
+    .fields{grid-template-columns:1fr;}
+    fieldset.seg{gap:5px;}
+    .opt label{min-height:60px; padding:6px 2px;}
+    .opt label .cap{display:none;}
+    .ref .grid{grid-template-columns:1fr;}
+    .thr-node .lbl{font-size:0;}
+    .thr-node .lbl::first-letter{font-size:12.5px;}
+  }
+
+  /* ---------- Print ---------- */
+  @media print{
+    :root{--paper:#fff; --paper-lift:#fff;}
+    body{background:#fff; font-size:14pt;}
+    .no-print{display:none !important;}
+    .wrap{max-width:100%; padding:0;}
+    .screen{display:none !important;}
+    #result.screen{display:block !important; animation:none;}
+    .result-hero{margin-top:0;}
+    .dcard, table.mapt, .ref, .card{box-shadow:none; break-inside:avoid;}
+    .ref{background:#fff; color:#000; border:1px solid #999;}
+    .ref h3, .ref .grid b{color:#000;}
+    .ref .grid div{border-color:#ccc;}
+    .cards-sec, .map, .ref{break-inside:avoid;}
+    .dcard{border:1px solid #bbb; border-left:4px solid var(--stone);}
+    .pill{border:1px solid #999;}
+    @page{margin:1.6cm;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ================= WELCOME ================= -->
+  <section id="welcome" class="screen active">
+    <div class="hero">
+      <div class="eyebrow">Brief Edition · A self-reflection map</div>
+      <h1>Interior Life Mapping</h1>
+      <p class="sub">Ten quiet minutes, five rooms, one honest picture of where your interior life stands today — from the mirror to the door.</p>
+      <div class="rooms" id="roomsRow"></div>
+    </div>
+
+    <div class="card intro-card">
+      <h3>Before you begin</h3>
+      <p style="color:var(--text-mute); font-size:17px; margin:0;">Thirty-five statements, five rooms. There are no right answers here — only true ones. Respond to how things actually are in this season, not how you hope they will be.</p>
+      <ul>
+        <li>Work quickly — your first instinct is more accurate than your considered one.</li>
+        <li>This instrument is a conversation starter, not a diagnostic. Scores open questions; they do not close them.</li>
+        <li>Items are adapted from validated psychological instruments, cited beneath each statement.</li>
+      </ul>
+
+      <div class="actions end">
+        <button class="btn btn-primary" onclick="start()">Begin the assessment</button>
+      </div>
+    </div>
+
+    <p class="footer">Brief Edition · Companion resource to <b>Emotionally Whole: From the Mirror to the Door</b> · Winston H.K. Chew</p>
+  </section>
+
+  <!-- ================= ASSESSMENT ================= -->
+  <section id="assess" class="screen">
+    <div class="threshold no-print" id="threshold" style="margin-top:40px;"></div>
+    <div style="margin-top:26px;">
+      <div class="domain-head" id="dhead"></div>
+      <div class="scale-legend">
+        <span>1 · Rarely</span><span>2 · Sometimes</span><span>3 · About half</span><span>4 · Often</span><span>5 · Almost always</span>
+      </div>
+      <div class="items" id="items"></div>
+    </div>
+    <div class="hint" id="hint">Please respond to all seven statements to continue.</div>
+    <div class="actions">
+      <button class="btn btn-ghost" id="backBtn" onclick="back()">Back</button>
+      <button class="btn btn-primary" id="nextBtn" onclick="next()">Continue</button>
+    </div>
+    <p class="footer no-print" id="assessProgress"></p>
+  </section>
+
+  <!-- ================= RESULTS ================= -->
+  <section id="result" class="screen">
+    <div class="result-hero">
+      <div class="eyebrow">Your interior life map · Brief Edition</div>
+      <h1>From the Mirror to the Door</h1>
+      <p style="margin:12px auto 0; max-width:46ch; color:var(--text-mute); font-size:17px; line-height:1.55;">A snapshot for reflection — carry it into the seminar, your journal, or a trusted conversation.</p>
+      <p id="preparedFor" class="prepared"></p>
+    </div>
+
+    <div class="radar-wrap" id="radarWrap"></div>
+
+    <div class="map">
+      <h3>The five domains</h3>
+      <table class="mapt">
+        <thead><tr><th>Domain</th><th>Score</th><th>Status</th></tr></thead>
+        <tbody id="mapBody"></tbody>
+      </table>
+    </div>
+
+    <div class="cards-sec">
+      <h3>Domain by domain</h3>
+      <div id="dcards"></div>
+    </div>
+
+    <div class="ref">
+      <h3>How to read your score</h3>
+      <div class="grid">
+        <div><b>1.0 – 2.4</b> &nbsp;Priority — formation work is needed here</div>
+        <div><b>2.5 – 3.4</b> &nbsp;Developing — present but inconsistent</div>
+        <div><b>3.5 – 4.2</b> &nbsp;Strength — operating well; maintain and deepen</div>
+        <div><b>4.3 – 5.0</b> &nbsp;Exceptional — a formation asset; ensure it serves others</div>
+      </div>
+      <p class="rev">Each domain score is the average of its seven responses, on a 1.0–5.0 scale. Reverse-worded items are scored inversely so that a higher number always reflects greater strength.</p>
+    </div>
+
+    <p class="disclaim">This instrument is a conversation starter, not a diagnostic.<br>Scores open questions; they do not close them.</p>
+
+    <div class="save-box no-print">
+      <h3>Save my map</h3>
+      <label for="pname" class="save-lbl">Your name <span>(optional — appears only on your saved map)</span></label>
+      <input id="pname" type="text" maxlength="60" autocomplete="name" placeholder="e.g. Grace Tan" oninput="onNameInput()">
+      <button id="saveBtn" class="btn btn-primary save-main" onclick="saveMap('both')" disabled>Preparing your map…</button>
+      <p class="save-alt" id="saveAlt">Or save just the <a href="#" onclick="saveMap('pdf');return false;">PDF report</a> · <a href="#" onclick="saveMap('png');return false;">image</a> · <a href="#" onclick="window.print();return false;">print</a></p>
+      <p class="save-note">Your map is created on this device. Nothing is uploaded or stored.</p>
+    </div>
+
+    <div class="print-actions no-print">
+      <button class="btn btn-ghost" onclick="retake()">Take it again</button>
+    </div>
+
+    <p class="footer">Brief Edition · Companion resource to <b>Emotionally Whole: From the Mirror to the Door</b> · Winston H.K. Chew</p>
+  </section>
+
+</div>
+
+<script src="jspdf.umd.min.js"></script>
+<script>
+/* ============ DATA ============ */
+const DOMAINS = [
+  {
+    n:1, key:'mirror', name:'Self-Awareness', room:'The Mirror', tint:'var(--mirror)', tintHex:'#2F80C0',
+    ref:'Psalm 139:1', verse:'O Lord, you have searched me and known me.',
+    items:[
+      {t:'I often reflect on my feelings and usually gain valuable insight from that reflection.', s:'SRIS — Grant et al., 2002'},
+      {t:'When I notice an emotional reaction in myself, I can usually identify the feeling accurately.', s:'SRIS / TEIQue — Petrides, 2009'},
+      {t:'I am aware of how my moods affect the people around me.', s:'ESCI — Boyatzis & Goleman, 2007'},
+      {t:'I can notice when I am beginning to feel stressed or anxious before others see it in my behaviour.', s:'MAIA — Mehling et al., 2012'},
+      {t:'It is difficult for me to understand why I feel the way I do in certain situations.', s:'SRIS — Grant et al., 2002', r:true},
+      {t:'I am able to identify my emotions even when they conflict with what I think I should be feeling.', s:'DERS — Gratz & Roemer, 2004'},
+      {t:'Feedback that reveals a gap between how I see myself and how others see me is something I actively seek.', s:'ESCI 360 — Boyatzis & Goleman, 2007'}
+    ],
+    bands:[
+      'Limited self-awareness. The gap between self-image and reality may be wide and largely invisible.',
+      'Developing self-awareness. Reflection is happening; insight is inconsistent.',
+      'Strong self-awareness. The mirror is held honestly and regularly.',
+      'Exceptional self-awareness. The mirror has become a discipline — now let it make you a safe, honest mirror for others.'
+    ]
+  },
+  {
+    n:2, key:'furnace', name:'Self-Regulation', room:'The Furnace', tint:'var(--furnace)', tintHex:'#E2582B',
+    ref:'Genesis 39:9', verse:'How then can I do this great wickedness, and sin against God?',
+    items:[
+      {t:'When I am upset or under pressure, I am able to think about the situation in a way that helps me stay calm.', s:'ERQ — Gross & John, 2003'},
+      {t:'When I experience a strong negative emotion, I can find my way back to functioning within a reasonable time.', s:'DERS — Gratz & Roemer, 2004'},
+      {t:'When I am upset, I control my emotions by not expressing them — keeping them hidden rather than processed.', s:'ERQ — Gross & John, 2003', r:true},
+      {t:'When I face a difficult situation, I draw on past experiences to give me confidence that I can manage it.', s:'CD-RISC — Connor & Davidson, 2003'},
+      {t:'When I am in conflict with someone, I am able to pause before responding rather than react immediately.', s:'DERS — Gratz & Roemer, 2004'},
+      {t:'I can stay committed to a long-term goal even when progress is slow and no one is affirming the effort.', s:'Grit Scale — Duckworth et al., 2007'},
+      {t:'When I am under sustained pressure, I have effective strategies that genuinely help — not just distractions.', s:'DTS — Simons & Gaher, 2005'}
+    ],
+    bands:[
+      'Significant regulation difficulty. The furnace may be governing the person rather than forming them.',
+      'Moderate regulation. Able to manage in most situations; specific pressure points remain unaddressed.',
+      'Strong regulation. The interior has been brought under deliberate governance over time.',
+      'Exceptional regulation. What was forged in the furnace has become a steadiness others can lean on in their own fire.'
+    ]
+  },
+  {
+    n:3, key:'ruins', name:'Motivation', room:'The Ruins', tint:'var(--ruins)', tintHex:'#C08F12',
+    ref:'Nehemiah 1:4', verse:'When I heard these words, I sat down and wept.',
+    items:[
+      {t:'I have a strong sense that my work makes a positive difference beyond my own career or financial gain.', s:'CVQ — Dik et al., 2012'},
+      {t:'My life has a clear sense of purpose that gives direction to my daily decisions.', s:'MLQ — Steger et al., 2006'},
+      {t:'I feel drawn toward the work I do by something I could not easily walk away from, even when it is costly.', s:'CVQ — Dik et al., 2012'},
+      {t:'In uncertain times, I usually expect that things will work out well.', s:'LOT-R — Scheier, Carver & Bridges, 1994'},
+      {t:'My current drive comes primarily from external confirmation — results, recognition, or the absence of criticism.', s:'WEIMS — Tremblay et al., 2009', r:true},
+      {t:'I can identify a specific unmet need or broken situation in the world that I find I cannot look away from.', s:'CVQ / Calling — Dik et al., 2012'},
+      {t:'I continue pursuing my calling even in seasons where the outcomes do not seem to confirm the investment.', s:'Grit Scale — Duckworth et al., 2007'}
+    ],
+    bands:[
+      'Motivation may be primarily excitement- or obligation-based. The burden beneath the calling needs locating.',
+      'Mixed motivation. A genuine drive is present but may be diluted by external dependency.',
+      'Burden-based drive. The calling is sourced in something deeper than affirmation or outcome.',
+      'Exceptional, burden-rooted drive. The weeping has become building — invite others to carry the wall with you.'
+    ]
+  },
+  {
+    n:4, key:'border', name:'Empathy', room:'The Border Crossing', tint:'var(--border)', tintHex:'#2E9E68',
+    ref:'Ruth 1:16', verse:'Where you go, I will go; where you lodge, I will lodge.',
+    items:[
+      {t:'I try to understand another person\u2019s perspective fully before forming my own view in a disagreement.', s:'IRI (Perspective-Taking) — Davis, 1983'},
+      {t:'I often have genuine concern for people who are struggling, even when their struggle does not directly affect me.', s:'IRI (Empathic Concern) — Davis, 1983'},
+      {t:'I feel satisfied in my work of helping or caring for others — it still gives me energy rather than only costing it.', s:'ProQOL-5 — Stamm, 2010'},
+      {t:'I notice when someone around me is struggling emotionally, even when they have not said anything.', s:'TEIQue — Petrides, 2009'},
+      {t:'I feel drained, numb, or emotionally unavailable after sustained engagement with people in need.', s:'ProQOL-5 / CFST — Figley, 1995', r:true},
+      {t:'I am able to be genuinely present with another person\u2019s pain without immediately moving toward fixing it.', s:'IRI (Empathic Concern) — Davis, 1983'},
+      {t:'I am aware of the specific person or relationship I most consistently avoid crossing toward right now.', s:'Relational Needs Assessment — Erskine et al., 1999'}
+    ],
+    bands:[
+      'Empathic depletion likely. The capacity for genuine border-crossing may be near its functional limit.',
+      'Empathy is present but under strain. The source from which it draws needs attention.',
+      'Strong empathic capacity. The crossing is happening; maintaining the source is the formation priority.',
+      'Exceptional empathy. Crossing toward others has become second nature — make sure you also let others cross toward you.'
+    ]
+  },
+  {
+    n:5, key:'door', name:'Social Skills', room:'The Door', tint:'var(--door)', tintHex:'#8A4FC2',
+    ref:'Acts 16:15', verse:'Come to my house and stay.',
+    items:[
+      {t:'I am effective at influencing others\u2019 thinking and decisions through the quality of my engagement rather than my position.', s:'TSIS — Silvera et al., 2001'},
+      {t:'I am able to see what another person needs to grow and to act on that seeing in ways that expand rather than diminish them.', s:'ICQ — Buhrmester et al., 1988'},
+      {t:'I can navigate conflict in a way that preserves the relationship while addressing the real issue.', s:'TKI — Thomas & Kilmann, 1974'},
+      {t:'I am good at reading unspoken social cues — noticing what is not being said as well as what is.', s:'TSIS — Silvera et al., 2001'},
+      {t:'The primary source of my influence in relationships is my character rather than my competence or position.', s:'VIA / Influence Style — Peterson & Seligman, 2004'},
+      {t:'I open doors for others to walk through — creating access and opportunity that others can benefit from.', s:'ICQ / SSI — Riggio, 1986'},
+      {t:'I am able to have the difficult conversation — the correction, the challenge, the honest word — in a way the other person receives as gift rather than threat.', s:'ICQ — Buhrmester et al., 1988'}
+    ],
+    bands:[
+      'Social intelligence may be primarily positional or competency-based. Character-formed influence needs development.',
+      'Growing social intelligence. The door is opening in some contexts; character formation remains the work.',
+      'Strong character-formed social intelligence. The door is opened for others consistently.',
+      'Exceptional social intelligence. Your door has become a doorway for others — keep character, not reputation, as its frame.'
+    ]
+  }
+];
+
+/* ============ ROOM ICONS ============ */
+const ICONS = {
+  mirror: '<ellipse cx="12" cy="9" rx="5.5" ry="6.5"/><path d="M12 15.5V22M9.3 22h5.4"/><path d="M9.4 6.6q.9-1.9 3-2.2"/>',
+  furnace:'<path d="M12 22c-3.9 0-6.5-2.6-6.5-6.2 0-3.3 2.3-5.3 3.6-7.6.6 1.6 1.4 2.6 2.4 3.2.3-3.8 1.5-7 4.1-8.9-.2 3 1.2 5 2.4 6.8.9 1.4 1.5 2.9 1.5 4.6 0 5.3-3.1 8.1-7.5 8.1z"/><path d="M12 22c-1.7 0-2.9-1.2-2.9-2.9 0-1.6 1.1-2.6 2-3.8.9 1.2 2.8 2.2 2.8 4 0 1.6-.9 2.7-1.9 2.7z"/>',
+  ruins:  '<path d="M3.5 21h17M6 18h12"/><path d="M8 18V9.5l2-1.6 1.6 1.6 2-2.2 2.4 1.6V18"/><path d="M11 18v-6M13.6 18v-6"/><path d="M17.8 4.6l1.6-1.1M4.6 6.2l1.6.6"/>',
+  border: '<path d="M2 18h20"/><path d="M3 18c2.5-6.2 15.5-6.2 18 0"/><path d="M7 18v-4.2M12 18v-5.6M17 18v-4.2"/><path d="M2 21h3.5M18.5 21H22"/>',
+  door:   '<path d="M3.5 21h17"/><path d="M6 21V3h11v18"/><path d="M6 3l6 2.2v16.6L6 21"/><circle cx="10.2" cy="12.6" r=".9" fill="currentColor"/>'
+};
+function badge(d, px, invert){
+  const bg = invert ? '#FFFFFF' : d.tintHex, fg = invert ? d.tintHex : '#FFFFFF', ic = Math.round(px*0.62);
+  return `<span class="badge" style="width:${px}px;height:${px}px;background:${bg};color:${fg}"><svg viewBox="0 0 24 24" width="${ic}" height="${ic}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[d.key]}</svg></span>`;
+}
+function renderRoomsRow(){
+  el('roomsRow').innerHTML = DOMAINS.map(d=>`<span class="rm">${badge(d,30)}<b>${d.room.replace(' Crossing','')}</b></span>`).join('<span class="arw">→</span>');
+}
+
+/* ============ STATE ============ */
+let cur = 0; // current domain index
+const responses = DOMAINS.map(()=>Array(7).fill(null));
+
+/* ============ SCORING ============ */
+function domainRaw(di){
+  let raw = 0;
+  DOMAINS[di].items.forEach((it,i)=>{
+    const v = responses[di][i];
+    raw += it.r ? (6 - v) : v;
+  });
+  return raw; // 7..35
+}
+function domainMean(di){ return Math.round((domainRaw(di) / 7) * 10) / 10; } // 1.0..5.0, rounded to the displayed 1 dp
+const TIERS = ['Priority','Developing','Strength','Exceptional'];
+function tierOf(mean){
+  if(mean <= 2.4) return 'Priority';
+  if(mean <= 3.4) return 'Developing';
+  if(mean <= 4.2) return 'Strength';
+  return 'Exceptional';
+}
+
+/* ============ FLOW ============ */
+function el(id){ return document.getElementById(id); }
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  el(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function start(){
+  cur = 0;
+  show('assess');
+  renderDomain();
+}
+
+function renderThreshold(){
+  const t = el('threshold');
+  t.innerHTML = DOMAINS.map((d,i)=>{
+    const cls = i < cur ? 'done' : (i === cur ? 'current' : '');
+    return `<div class="thr-node ${cls}">${badge(d,28)}<span class="lbl">${d.room.replace('The ','')}</span></div>`;
+  }).join('');
+}
+
+function renderDomain(){
+  const d = DOMAINS[cur];
+  renderThreshold();
+
+  el('dhead').style.background = `linear-gradient(135deg, ${d.tintHex} 0%, ${shade(d.tintHex,-22)} 100%)`;
+  el('dhead').innerHTML = `
+    <div class="dh-top">${badge(d,56,true)}<div>
+    <div class="room-no">Domain ${d.n} of 5</div>
+    <h2>${d.name}<span class="room-name"> · ${d.room}</span></h2></div></div>
+    <div class="verse">${d.verse}<span class="ref">${d.ref}</span></div>`;
+
+  el('items').innerHTML = d.items.map((it,i)=>{
+    const opts = [1,2,3,4,5].map(v=>{
+      const caps = {1:'Rarely',2:'Sometimes',3:'About half',4:'Often',5:'Almost always'};
+      const checked = responses[cur][i] === v ? 'checked' : '';
+      return `<div class="opt">
+        <input type="radio" id="i${i}v${v}" name="item${i}" value="${v}" ${checked}
+               onchange="setAns(${i},${v})" aria-label="${caps[v]}">
+        <label for="i${i}v${v}"><span class="num">${v}</span><span class="cap">${caps[v]}</span></label>
+      </div>`;
+    }).join('');
+    return `<div class="item">
+      <div class="stmt">${it.t}</div>
+      <div class="src">${it.s}</div>
+      <fieldset class="seg"><legend>${it.t}</legend>${opts}</fieldset>
+    </div>`;
+  }).join('');
+
+  el('backBtn').textContent = cur === 0 ? 'Back to start' : 'Back';
+  el('nextBtn').textContent = cur === DOMAINS.length - 1 ? 'See my map' : 'Continue';
+  el('hint').classList.remove('show');
+  el('assessProgress').textContent = `Domain ${d.n} of ${DOMAINS.length}`;
+}
+
+function setAns(i, v){
+  responses[cur][i] = v;
+  if(responses[cur].every(x=>x!==null)) el('hint').classList.remove('show');
+}
+
+function back(){
+  if(cur === 0){ show('welcome'); return; }
+  cur--; renderDomain();
+}
+
+function next(){
+  if(responses[cur].some(x=>x===null)){
+    el('hint').classList.add('show');
+    return;
+  }
+  if(cur < DOMAINS.length - 1){ cur++; renderDomain(); }
+  else { showResults(); }
+}
+
+function retake(){
+  cur = 0;
+  EXP.token++; EXP.ready = false; EXP.pdf = EXP.png = null;
+  responses.forEach(r=>r.fill(null));
+  show('welcome');
+}
+
+/* ============ RESULTS ============ */
+function showResults(){
+  const means = DOMAINS.map((d,i)=>domainMean(i));
+
+  // radar
+  el('radarWrap').innerHTML = buildRadar(means);
+
+  // map table
+  el('mapBody').innerHTML = DOMAINS.map((d,i)=>{
+    const m = means[i], tier = tierOf(m);
+    return `<tr>
+      <td><div class="dname">${badge(d,30)}
+        <span><strong>${d.name}</strong> <span style="color:var(--text-faint); font-style:italic; font-family:var(--serif)">${d.room}</span></span></div></td>
+      <td class="sc">${m.toFixed(1)}<span style="font-size:14px;color:var(--text-faint);font-family:var(--sans)"> /5</span></td>
+      <td><span class="pill ${tier}">${tier}</span></td>
+    </tr>`;
+  }).join('');
+
+  // domain cards
+  el('dcards').innerHTML = DOMAINS.map((d,i)=>{
+    const raw = domainRaw(i), m = means[i], tier = tierOf(m);
+    const bandText = d.bands[TIERS.indexOf(tier)];
+    const pct = Math.max(4, (m/5)*100);
+    return `<div class="dcard" style="border-left-color:${d.tintHex}">
+      <div class="top">
+        <div class="dtitle">${badge(d,44)}<div>
+          <h3>${d.name}</h3>
+          <div class="room">${d.room} · ${d.ref}</div>
+        </div></div>
+        <div class="scorebox">
+          <div class="big">${m.toFixed(1)}</div>
+          <div class="of">/ 5.0</div>
+          <div class="raw">raw ${raw} / 35</div>
+        </div>
+      </div>
+      <div class="meter"><div class="fill" style="width:${pct}%; background:${d.tintHex}"></div></div>
+      <div class="band"><span class="pill ${tier}" style="margin-right:8px">${tier}</span>${bandText}</div>
+    </div>`;
+  }).join('');
+
+  show('result');
+  scheduleExport();
+  // animate meters after paint
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    document.querySelectorAll('.dcard .fill').forEach(f=>{ const w=f.style.width; f.style.width='0%'; requestAnimationFrame(()=>{ f.style.width=w; }); });
+  }));
+}
+
+/* ============ RADAR (self-contained SVG) ============ */
+function buildRadar(means){
+  const size=420, cx=size/2, cy=size/2+6, R=140, N=5, maxV=5;
+  const ang = k => (-Math.PI/2) + k*(2*Math.PI/N);
+  const pt = (k,v)=>[cx + Math.cos(ang(k))*(R*v/maxV), cy + Math.sin(ang(k))*(R*v/maxV)];
+
+  let rings='';
+  for(let r=1;r<=5;r++){
+    const pts=[];
+    for(let k=0;k<N;k++){ const p=pt(k,r); pts.push(p.join(',')); }
+    rings += `<polygon points="${pts.join(' ')}" fill="none" stroke="${r===5?'#B7B0A0':'#D6D1C3'}" stroke-width="${r===5?1.4:1}"/>`;
+  }
+  let spokes='';
+  for(let k=0;k<N;k++){ const p=pt(k,5); spokes += `<line x1="${cx}" y1="${cy}" x2="${p[0]}" y2="${p[1]}" stroke="#D6D1C3" stroke-width="1"/>`; }
+
+  const dataPts=[];
+  for(let k=0;k<N;k++){ dataPts.push(pt(k,means[k]).join(',')); }
+  const poly = `<polygon points="${dataPts.join(' ')}" fill="rgba(169,133,63,.22)" stroke="#A9853F" stroke-width="2.2" stroke-linejoin="round"/>`;
+  let dots='';
+  for(let k=0;k<N;k++){ const p=pt(k,means[k]); dots += `<circle cx="${p[0]}" cy="${p[1]}" r="4.5" fill="${DOMAINS[k].tintHex}" stroke="#F5F3EC" stroke-width="1.5"/>`; }
+
+  let labels='';
+  for(let k=0;k<N;k++){
+    const lp=pt(k,5.62); let anchor='middle';
+    if(lp[0] < cx-8) anchor='end'; else if(lp[0] > cx+8) anchor='start';
+    const dy = lp[1] < cy-40 ? -2 : (lp[1] > cy+40 ? 12 : 4);
+    const short = {mirror:'Mirror',furnace:'Furnace',ruins:'Ruins',border:'Border',door:'Door'}[DOMAINS[k].key];
+    labels += `<text x="${lp[0]}" y="${lp[1]+dy}" text-anchor="${anchor}" font-family="Fraunces, serif" font-size="17" font-style="italic" fill="#33474C">${short}</text>`;
+    labels += `<text x="${lp[0]}" y="${lp[1]+dy+17}" text-anchor="${anchor}" font-family="Hanken Grotesk, sans-serif" font-size="16" font-weight="700" fill="${DOMAINS[k].tintHex}">${means[k].toFixed(1)}</text>`;
+  }
+
+  return `<svg class="radar" viewBox="0 0 ${size} ${size+30}" width="${size}" role="img" aria-label="Radar chart of five domain scores">
+    ${rings}${spokes}${poly}${dots}${labels}
+  </svg>`;
+}
+
+/* ============ SAVE MY MAP — PDF report + phone image, made on this device ============ */
+const EXP = { pdf:null, png:null, ready:false, timer:null, token:0 };
+const C_SANS  = "'Hanken Grotesk', 'Segoe UI', Arial, sans-serif";
+const C_SERIF = "Fraunces, Georgia, 'Times New Roman', serif";
+const TIER_COL = {
+  Priority:['#F3E0DA','#8A3F23'], Developing:['#EFE9D4','#7A6524'],
+  Strength:['#DEE9E1','#2E5B45'], Exceptional:['#DCE4E6','#22484C']
+};
+const IS_TOUCH = window.matchMedia && window.matchMedia('(pointer:coarse)').matches;
+
+function participantName(){ const i = el('pname'); return i ? i.value.trim().slice(0,60) : ''; }
+function todayStr(){ return new Date().toLocaleDateString('en-GB',{day:'numeric', month:'long', year:'numeric'}); }
+function fileBase(){
+  const n = participantName().replace(/[^A-Za-z0-9À-ɏ一-鿿]+/g,'-').replace(/^-+|-+$/g,'');
+  return 'Interior-Life-Map' + (n ? '_' + n : '') + '_' + new Date().toISOString().slice(0,10);
+}
+function svgImg(svg){
+  return new Promise((res, rej)=>{ const i = new Image(); i.onload = ()=>res(i); i.onerror = rej;
+    i.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); });
+}
+function badgeSvg(d){
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="160" height="160"><circle cx="12" cy="12" r="12" fill="${d.tintHex}"/><g transform="translate(4.6 4.6) scale(.617)" fill="none" stroke="#FFFFFF" color="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICONS[d.key]}</g></svg>`;
+}
+function rr(ctx, x, y, w, h, r){
+  ctx.beginPath(); ctx.moveTo(x+r, y); ctx.lineTo(x+w-r, y); ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r); ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h); ctx.lineTo(x+r, y+h);
+  ctx.quadraticCurveTo(x, y+h, x, y+h-r); ctx.lineTo(x, y+r); ctx.quadraticCurveTo(x, y, x+r, y); ctx.closePath();
+}
+function wrapText(ctx, text, maxW){
+  const words = String(text).split(/\s+/), lines = []; let line = '';
+  for(const w of words){ const t = line ? line + ' ' + w : w;
+    if(line && ctx.measureText(t).width > maxW){ lines.push(line); line = w; } else line = t; }
+  if(line) lines.push(line); return lines;
+}
+
+/* Build the report as a list of blocks {h, draw(ctx, y)} at width W */
+function buildBlocks(W, A, k = 1, radarMax = 720){
+  const u = W/1080*k, P = 72*u, CW = W - 2*P;
+  const m = document.createElement('canvas').getContext('2d');
+  const means = DOMAINS.map((d,i)=>domainMean(i));
+  const name = participantName();
+  const blocks = [];
+
+  // Header
+  blocks.push({ id:'head', h:250*u, draw:(c,y)=>{
+    c.textAlign='center'; c.textBaseline='top';
+    c.fillStyle='#A9853F'; c.font=`italic 400 ${30*u}px ${C_SERIF}`;
+    c.fillText('Interior Life Mapping · Brief Edition', W/2, y+40*u);
+    c.fillStyle='#1B2A2E'; c.font=`500 ${62*u}px ${C_SERIF}`;
+    c.fillText('From the Mirror to the Door', W/2, y+88*u);
+    c.fillStyle='#5C6461'; c.font=`500 ${28*u}px ${C_SANS}`;
+    c.fillText(name ? `Prepared for ${name}  ·  ${todayStr()}` : todayStr(), W/2, y+178*u);
+  }});
+
+  // Radar
+  const rw = Math.min(CW, radarMax*u), rh = rw*450/420;
+  blocks.push({ id:'radar', h:rh + 30*u, draw:(c,y)=>{ c.drawImage(A.radar, (W-rw)/2, y, rw, rh); }});
+
+  // Section title
+  const section = (t)=>({ id:'sec', h:70*u, keep:true, draw:(c,y)=>{
+    c.textAlign='left'; c.textBaseline='top'; c.fillStyle='#5C6461';
+    c.font=`700 ${24*u}px ${C_SANS}`; c.fillText(t, P, y+24*u);
+  }});
+  blocks.push(section('THE FIVE ROOMS'));
+
+  // Room cards
+  const pad = 36*u, descW = CW - 2*pad;
+  DOMAINS.forEach((d,i)=>{
+    const raw = domainRaw(i), mean = means[i], tier = tierOf(mean);
+    const desc = d.bands[TIERS.indexOf(tier)];
+    m.font = `400 ${27*u}px ${C_SANS}`;
+    const lines = wrapText(m, desc, descW);
+    const ch = 246*u + lines.length*39*u + 30*u;
+    blocks.push({ id:'card', h: ch + 24*u, draw:(c,y)=>{
+      const x = P, y0 = y;
+      c.save(); rr(c, x, y0, CW, ch, 20*u); c.fillStyle='#F5F3EC'; c.fill();
+      c.lineWidth = 2*u; c.strokeStyle='#DDD9CD'; c.stroke(); c.clip();
+      c.fillStyle = d.tintHex; c.fillRect(x, y0, 9*u, ch); c.restore();
+      c.drawImage(A.badges[i], x+pad, y0+pad, 84*u, 84*u);
+      const tx = x + pad + 84*u + 24*u;
+      c.textAlign='left'; c.textBaseline='top';
+      c.fillStyle='#1B2A2E'; c.font=`500 ${40*u}px ${C_SERIF}`; c.fillText(d.name, tx, y0+38*u);
+      c.fillStyle='#5C6461'; c.font=`italic 400 ${26*u}px ${C_SERIF}`; c.fillText(`${d.room} · ${d.ref}`, tx, y0+92*u);
+      c.textAlign='right'; c.fillStyle='#1B2A2E'; c.font=`600 ${64*u}px ${C_SERIF}`;
+      c.fillText(mean.toFixed(1), x+CW-pad, y0+26*u);
+      c.fillStyle='#8A8F89'; c.font=`500 ${21*u}px ${C_SANS}`;
+      c.fillText(`/ 5.0  ·  raw ${raw} / 35`, x+CW-pad, y0+102*u);
+      const mx = x+pad, mw = CW-2*pad, my = y0+150*u;
+      rr(c, mx, my, mw, 12*u, 6*u); c.fillStyle='#DDD9CD'; c.fill();
+      rr(c, mx, my, Math.max(12*u, mw*mean/5), 12*u, 6*u); c.fillStyle=d.tintHex; c.fill();
+      c.textAlign='left'; c.font=`700 ${23*u}px ${C_SANS}`;
+      const pw = c.measureText(tier).width + 34*u;
+      rr(c, mx, y0+186*u, pw, 42*u, 21*u); c.fillStyle=TIER_COL[tier][0]; c.fill();
+      c.fillStyle=TIER_COL[tier][1]; c.fillText(tier, mx+17*u, y0+195*u);
+      c.fillStyle='#3E4644'; c.font=`400 ${27*u}px ${C_SANS}`;
+      lines.forEach((ln,k)=>c.fillText(ln, mx, y0+246*u + k*39*u));
+    }});
+  });
+
+  // Score guide
+  const guide = [['1.0 – 2.4','Priority — formation work is needed here'],['2.5 – 3.4','Developing — present but inconsistent'],
+                 ['3.5 – 4.2','Strength — operating well; maintain and deepen'],['4.3 – 5.0','Exceptional — a formation asset; ensure it serves others']];
+  m.font = `400 ${22*u}px ${C_SANS}`;
+  const noteLines = wrapText(m, 'Each room score is the average of its seven responses, on a 1.0–5.0 scale. Reverse-worded items are scored inversely so a higher number always reflects greater strength.', CW-2*pad);
+  const gh = 90*u + guide.length*46*u + 20*u + noteLines.length*32*u + 30*u;
+  blocks.push({ id:'guide', h: gh + 30*u, draw:(c,y)=>{
+    rr(c, P, y+10*u, CW, gh, 20*u); c.fillStyle='#1B2A2E'; c.fill();
+    c.textAlign='left'; c.textBaseline='top';
+    c.fillStyle='#B7C2BE'; c.font=`700 ${22*u}px ${C_SANS}`; c.fillText('HOW TO READ YOUR SCORE', P+pad, y+44*u);
+    guide.forEach((g,k)=>{ const gy = y+100*u + k*46*u;
+      c.fillStyle='#EDE8DA'; c.font=`600 ${25*u}px ${C_SERIF}`; c.fillText(g[0], P+pad, gy);
+      c.fillStyle='#D7DEDB'; c.font=`400 ${25*u}px ${C_SANS}`; c.fillText(g[1], P+pad+150*u, gy); });
+    c.fillStyle='#9DA9A5'; c.font=`400 ${22*u}px ${C_SANS}`;
+    noteLines.forEach((ln,k)=>c.fillText(ln, P+pad, y+100*u + guide.length*46*u + 20*u + k*32*u));
+  }});
+
+  // Footer
+  m.font = `500 ${21*u}px ${C_SANS}`;
+  const foot = wrapText(m, 'Brief Edition · Companion resource to Emotionally Whole: From the Mirror to the Door · Winston H.K. Chew', CW);
+  blocks.push({ id:'foot', h: 120*u + foot.length*30*u, draw:(c,y)=>{
+    c.textAlign='center'; c.textBaseline='top';
+    c.fillStyle='#5C6461'; c.font=`italic 400 ${25*u}px ${C_SERIF}`;
+    c.fillText('This instrument is a conversation starter, not a diagnostic.', W/2, y+24*u);
+    c.fillText('Scores open questions; they do not close them.', W/2, y+58*u);
+    c.fillStyle='#8A8F89'; c.font=`500 ${21*u}px ${C_SANS}`;
+    foot.forEach((ln,k)=>c.fillText(ln, W/2, y+104*u + k*30*u));
+  }});
+  return { blocks, u };
+}
+
+function newCanvas(W, H){
+  const cv = document.createElement('canvas'); cv.width = Math.round(W); cv.height = Math.round(H);
+  const c = cv.getContext('2d'); c.fillStyle = '#ECEAE1'; c.fillRect(0, 0, cv.width, cv.height); return [cv, c];
+}
+function toBlob(cv, type, q){ return new Promise(res=>cv.toBlob(res, type, q)); }
+
+async function loadAssets(){
+  try{ await Promise.all([`500 40px Fraunces`,`italic 400 26px Fraunces`,`600 64px Fraunces`,`400 27px "Hanken Grotesk"`,`700 23px "Hanken Grotesk"`]
+    .map(f=>document.fonts.load(f))); }catch(e){}
+  const means = DOMAINS.map((d,i)=>domainMean(i));
+  const radarSvg = buildRadar(means).replace('<svg class="radar"', '<svg xmlns="http://www.w3.org/2000/svg" class="radar"').replace('width="420"', 'width="840" height="900"');
+  const [radar, ...badges] = await Promise.all([svgImg(radarSvg), ...DOMAINS.map(d=>svgImg(badgeSvg(d)))]);
+  return { radar, badges };
+}
+
+async function makeImage(A){
+  const W = 1080, { blocks, u } = buildBlocks(W, A);
+  const H = blocks.reduce((s,b)=>s+b.h, 0) + 70*u;
+  const [cv, c] = newCanvas(W, H); let y = 30*u;
+  blocks.forEach(b=>{ b.draw(c, y); y += b.h; });
+  return toBlob(cv, 'image/png');
+}
+
+async function makePdf(A){
+  if(!window.jspdf || !window.jspdf.jsPDF) return null;
+  const W = 1654, H = Math.round(W*297/210);
+  // Page 1: map + how to read it; page 2: the five rooms together. Tighten until it fits two pages.
+  const layout = (k)=>{
+    const { blocks, u } = buildBlocks(W, A, k, 760);
+    const top = 70*u, bottom = 70*u, pages = []; let pg = null, y = 0;
+    const order = ['head','radar','guide','foot'].map(id=>blocks.find(b=>b.id===id))
+      .concat(blocks.filter(b=>b.id==='sec').map(b=>Object.assign(b,{brk:true})), blocks.filter(b=>b.id==='card'));
+    order.forEach((b, i)=>{
+      const need = b.h + (b.keep && order[i+1] ? order[i+1].h : 0);
+      if(!pg || (b.brk && y > top) || y + need > H - bottom){ pg = []; pages.push(pg); y = top; }
+      pg.push([b, y]); y += b.h;
+    });
+    return { pages, u };
+  };
+  let L = null;
+  for(const k of [0.75, 0.7, 0.65, 0.6]){ L = layout(k); if(L.pages.length <= 2) break; }
+  const doc = new window.jspdf.jsPDF({ unit:'pt', format:'a4', compress:true });
+  L.pages.forEach((items, n)=>{
+    const [cv, c] = newCanvas(W, H);
+    items.forEach(([b, y])=>b.draw(c, y));
+    c.textAlign='right'; c.textBaseline='top'; c.fillStyle='#8A8F89'; c.font=`500 ${20*L.u}px ${C_SANS}`;
+    c.fillText(`Page ${n+1} of ${L.pages.length}`, W - 72*L.u, H - 50*L.u);
+    if(n) doc.addPage();
+    doc.addImage(cv.toDataURL('image/jpeg', 0.9), 'JPEG', 0, 0, 595.28, 841.89);
+  });
+  doc.setProperties({ title:'Interior Life Map — Brief Edition', author:'Interior Life Mapping', subject:'Self-reflection map' });
+  return doc.output('blob');
+}
+
+function setSaveState(state){
+  const b = el('saveBtn'); if(!b) return;
+  if(state === 'ready'){ b.disabled = false; b.textContent = IS_TOUCH ? 'Save my map' : 'Download my map (PDF + image)'; }
+  else if(state === 'error'){ b.disabled = false; b.textContent = 'Try saving again'; }
+  else { b.disabled = true; b.textContent = 'Preparing your map…'; }
+  const alt = el('saveAlt'); if(alt) alt.style.visibility = state === 'ready' ? 'visible' : 'hidden';
+}
+
+async function prepareExports(){
+  const token = ++EXP.token; EXP.ready = false; setSaveState('preparing');
+  try{
+    const A = await loadAssets();
+    const [pngBlob, pdfBlob] = await Promise.all([makeImage(A), makePdf(A)]);
+    if(token !== EXP.token) return;           // a newer request (e.g. name edit) superseded this one
+    const base = fileBase();
+    EXP.png = new File([pngBlob], base + '.png', { type:'image/png' });
+    EXP.pdf = pdfBlob ? new File([pdfBlob], base + '.pdf', { type:'application/pdf' }) : null;
+    EXP.ready = true; setSaveState('ready');
+  }catch(e){ console.error('Save my map:', e); if(token === EXP.token) setSaveState('error'); }
+}
+function scheduleExport(){ clearTimeout(EXP.timer); EXP.ready = false; setSaveState('preparing'); EXP.timer = setTimeout(prepareExports, 450); }
+function onNameInput(){
+  const n = participantName(), pf = el('preparedFor');
+  if(pf) pf.textContent = n ? `Prepared for ${n}` : '';
+  scheduleExport();
+}
+function downloadFile(f){
+  const a = document.createElement('a'); a.href = URL.createObjectURL(f); a.download = f.name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 15000);
+}
+async function saveMap(which){
+  if(!EXP.ready){ if(el('saveBtn').textContent === 'Try saving again') prepareExports(); return; }
+  let files = which === 'pdf' ? [EXP.pdf] : which === 'png' ? [EXP.png] : [EXP.pdf, EXP.png];
+  files = files.filter(Boolean);
+  if(IS_TOUCH && navigator.canShare){
+    const tryShare = async (fs)=>{ if(!navigator.canShare({ files:fs })) return false;
+      try{ await navigator.share({ files:fs, title:'My Interior Life Map' }); return true; }
+      catch(e){ return e.name === 'AbortError'; } };
+    if(await tryShare(files)) return;
+    if(files.length > 1 && await tryShare([EXP.png])) return;   // some apps accept only one file
+  }
+  files.forEach((f,k)=>setTimeout(()=>downloadFile(f), k*500));
+}
+
+/* ============ UTIL ============ */
+function shade(hex, pct){
+  const n=parseInt(hex.slice(1),16);
+  let r=(n>>16)&255, g=(n>>8)&255, b=n&255;
+  r=Math.max(0,Math.min(255, r + Math.round(255*pct/100)));
+  g=Math.max(0,Math.min(255, g + Math.round(255*pct/100)));
+  b=Math.max(0,Math.min(255, b + Math.round(255*pct/100)));
+  return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+}
+renderRoomsRow();
+</script>
+</body>
+</html>

@@ -206,6 +206,14 @@
   .save-box h3{font-size:25px; color:var(--ink); margin-bottom:16px;}
   .save-lbl{display:block; text-align:left; font-size:15px; font-weight:600; color:var(--text-mute); margin-bottom:6px;}
   .save-lbl span{font-weight:400; color:var(--text-faint);}
+  .name-gate{margin-top:24px; padding-top:20px; border-top:1px solid var(--stone-soft);}
+  .save-lbl .req{color:var(--furnace); font-weight:600;}
+  #uname{width:100%; font-family:var(--sans); font-size:18px; color:var(--text); padding:13px 15px; border:1px solid var(--stone); border-radius:9px; background:var(--paper);}
+  #uname:focus{outline:none; border-color:var(--brass); box-shadow:0 0 0 3px rgba(169,133,63,.15);}
+  #uname.invalid{border-color:var(--furnace); box-shadow:0 0 0 3px rgba(226,88,43,.15);}
+  .gate-hint{display:none; margin:8px 0 0; font-size:15px; font-weight:600; color:var(--furnace);}
+  .gate-hint.show{display:block;}
+  .gate-note{margin:8px 0 0; font-size:14px; color:var(--text-faint);}
   #pname{width:100%; font-family:var(--sans); font-size:18px; color:var(--text); padding:13px 15px; border:1px solid var(--stone); border-radius:9px; background:var(--paper);}
   #pname:focus{outline:none; border-color:var(--brass); box-shadow:0 0 0 3px rgba(169,133,63,.15);}
   .save-main{width:100%; margin-top:16px; font-size:19px; padding:17px 24px;}
@@ -267,6 +275,16 @@
         <li>This instrument is a conversation starter, not a diagnostic. Scores open questions; they do not close them.</li>
         <li>Items are adapted from validated psychological instruments, cited beneath each statement.</li>
       </ul>
+
+      <div class="name-gate">
+        <label for="uname" class="save-lbl">Your name <span class="req">(required)</span></label>
+        <input id="uname" type="text" maxlength="60" autocomplete="name" placeholder="e.g. Grace Tan"
+               aria-required="true" aria-describedby="unameHint"
+               oninput="this.classList.remove('invalid'); el('unameHint').classList.remove('show');"
+               onkeydown="if(event.key==='Enter'){ start(); }">
+        <p id="unameHint" class="gate-hint" role="alert">Your name is required to proceed. Please enter it to begin.</p>
+        <p class="gate-note">Your name appears on your report only. It stays on this device.</p>
+      </div>
 
       <div class="actions end">
         <button class="btn btn-primary" onclick="start()">Begin the assessment</button>
@@ -333,7 +351,7 @@
 
     <div class="save-box no-print">
       <h3>Save my map</h3>
-      <label for="pname" class="save-lbl">Your name <span>(optional — appears only on your saved map)</span></label>
+      <label for="pname" class="save-lbl">Name on your report <span>(you can edit it here)</span></label>
       <input id="pname" type="text" maxlength="60" autocomplete="name" placeholder="e.g. Grace Tan" oninput="onNameInput()">
       <button id="saveBtn" class="btn btn-primary save-main" onclick="saveMap('both')" disabled>Preparing your map…</button>
       <p class="save-alt" id="saveAlt">Or save just the <a href="#" onclick="saveMap('pdf');return false;">PDF report</a> · <a href="#" onclick="saveMap('png');return false;">image</a> · <a href="#" onclick="window.print();return false;">print</a></p>
@@ -497,6 +515,15 @@ function show(id){
 }
 
 function start(){
+  // Name is mandatory: do not proceed without it
+  const u = el('uname'), name = u.value.trim().replace(/\s+/g,' ');
+  if(!/[\p{L}\p{N}]/u.test(name)){
+    u.value = ''; u.classList.add('invalid'); el('unameHint').classList.add('show'); u.focus();
+    return;
+  }
+  u.value = name;
+  el('pname').value = name;
+  el('preparedFor').textContent = `Prepared for ${name}`;
   cur = 0;
   show('assess');
   renderDomain();

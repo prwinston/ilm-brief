@@ -13,4 +13,4 @@ run_worker_first = true
 # Format: YYYY-MM-DDTHH:MM:SS+08:00  (+08:00 = Malaysia time). Leave "" for no limit.
 [vars]
 OPEN_FROM = "2026-10-09T00:00:00+08:00"
-CLOSE_AT  = "2026-10-19T15:00:00+08:00"
+CLOSE_AT  = "2026-10-18T15:00:00+08:00"

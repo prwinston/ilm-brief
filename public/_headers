@@ -1,5 +1,5 @@
-# Cloudflare Pages — applied to every response.
-# Docs: https://developers.cloudflare.com/pages/configuration/headers/
+# Security & caching headers — applied to every file the Worker serves from ./public.
+# Docs: https://developers.cloudflare.com/workers/static-assets/headers/
 
 /*
   X-Frame-Options: SAMEORIGIN

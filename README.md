@@ -8,16 +8,44 @@ layer — just you and an honest picture of this season.
 Companion resource to *Emotionally Whole: From the Mirror to the Door* by
 **Winston H.K. Chew**.
 
-- **35 statements**, five domains, about ten minutes.
-- Items adapted from validated psychological instruments (cited in-app).
-- Automatic scoring, reverse-item handling, a radar chart, an interior-life
-  map, per-domain bands, and a clean **Print / Save-as-PDF** results page.
-- **No backend, no build step, no tracking, no personal data collected.**
-  One self-contained HTML file.
+- **35 statements**, five rooms, about ten minutes.
+- **Name required** before starting; it appears on the participant's report.
+- Automatic scoring, a radar chart, a colour-coded map and a card for each room.
+- **Save my map:** a two-page PDF report and a phone-sized image, made on the device.
+- **Access window:** the site is open only between two dates you set.
 
 ---
 
-## The five domains
+## The access window
+
+The site is served through a small Cloudflare Worker (`src/worker.js`) that
+checks the date **on Cloudflare's server** before sending anything. Outside the
+window, every visitor sees a short "Opening soon" or "This edition has now
+closed" page instead of the app. It can't be bypassed from the browser.
+
+The dates live in `wrangler.toml`:
+
+```toml
+[vars]
+OPEN_FROM = "2026-10-09T00:00:00+08:00"
+CLOSE_AT  = "2026-10-19T15:00:00+08:00"
+```
+
+- `+08:00` means Malaysia time. The format is `YYYY-MM-DDTHH:MM:SS+08:00`.
+- Leave a value empty (`""`) for no limit on that side.
+- If a date is mistyped, the site stays **closed** (safer than staying open by accident).
+
+**To change the dates:** on GitHub, open `wrangler.toml` → pencil icon → edit
+the two lines → **Commit changes**. Cloudflare redeploys within a minute or two.
+Change them here, not in the Cloudflare dashboard: each deploy resets dashboard
+variables to what's in this file.
+
+**Someone mid-assessment at closing time** can finish: the whole app is already
+loaded on their phone, and the report is made on the device.
+
+---
+
+## The five rooms
 
 | # | Domain | Room | Anchor |
 |---|--------|------|--------|
@@ -27,9 +55,9 @@ Companion resource to *Emotionally Whole: From the Mirror to the Door* by
 | 4 | Empathy | The Border Crossing | Ruth 1:16 |
 | 5 | Social Skills | The Door | Acts 16:15 |
 
-Each domain score is the **average of its seven responses** on a 1.0–5.0 scale.
-Reverse-worded items are scored inversely so a higher number always reflects
-greater strength.
+Each room score is the **average of its seven responses** on a 1.0–5.0 scale,
+rounded to one decimal place. Reverse-worded items are scored inversely so a
+higher number always reflects greater strength.
 
 | Score | Status |
 |-------|--------|
@@ -44,67 +72,24 @@ greater strength.
 
 ```
 .
-├── public/            ← the static assets the Worker serves
-│   ├── index.html     ← the entire app (HTML + CSS + JS in one file)
-│   ├── jspdf.umd.min.js ← jsPDF 2.5.2 (MIT), self-hosted, builds the PDF report
-│   └── _headers       ← security & caching headers (honoured by Workers static assets)
-├── wrangler.toml    ← Worker config: name "ilm-brief", assets from ./public
+├── public/                  ← the static files the Worker serves
+│   ├── index.html           ← the entire app (HTML + CSS + JS in one file)
+│   ├── jspdf.umd.min.js     ← jsPDF 2.5.2 (MIT), self-hosted, builds the PDF report
+│   └── _headers             ← security & caching headers
+├── src/
+│   └── worker.js            ← access window check + "closed" page
+├── wrangler.toml            ← Worker name, assets folder, access dates
 ├── .gitignore
 └── README.md
-```
-
-There is **nothing to compile**. `public/index.html` is the whole application.
-This is a pure static site with no `package.json` or build tooling. The
-`wrangler.toml` tells Cloudflare Workers to serve `./public` as static assets —
-there is no Worker script (see *Troubleshooting* below).
-
----
-
-## Save my map (phones and laptops)
-
-On the results page, participants can add an optional name and tap
-**Save my map**. The app builds two files **on the device**: a two-page A4
-**PDF report** (page 1 is the map and score guide, page 2 is the five rooms)
-and a **phone-sized PNG image** for Photos.
-
-- **Phones:** the button opens the phone's share menu, so people can choose
-  Save to Files, Save Image, or send it to themselves on WhatsApp or email.
-- **Laptops:** both files download.
-- Smaller links let people save just the PDF, just the image, or print.
-
-Nothing is uploaded: the files are made in the browser, and jsPDF is served
-from this site (no CDN), which fits the `script-src 'self'` policy.
-
----
-
-## Run it locally
-
-Any of these work — pick one:
-
-```bash
-# 1. Simplest: just open the file in a browser
-open public/index.html          # macOS  (or double-click the file)
-
-# 2. Serve it (matches production paths)
-npx serve public                        # then visit the printed URL
-python3 -m http.server 8000 -d public   # then visit http://localhost:8000
 ```
 
 ---
 
 ## Deploy to Cloudflare Workers (Git-connected)
 
-1. Create a repository named **`ilm-brief`** on GitHub and push this project:
-   ```bash
-   git init
-   git add .
-   git commit -m "Interior Life Mapping (brief) v1.0"
-   git branch -M main
-   git remote add origin https://github.com/<you>/ilm-brief.git
-   git push -u origin main
-   ```
+1. Push this project to the GitHub repository **`ilm-brief`**.
 2. **Cloudflare dashboard** → **Workers & Pages** → **Create** →
-   **Import a repository** (Workers tab), and pick `ilm-brief`.
+   **Import a repository**, and pick `ilm-brief`. (Already connected? Just push.)
 3. Build settings:
 
    | Setting | Value |
@@ -114,32 +99,41 @@ python3 -m http.server 8000 -d public   # then visit http://localhost:8000
    | Deploy command | `npx wrangler deploy` *(the default)* |
    | Root directory | `/` |
 
-4. **Deploy.** You get `https://ilm-brief.<your-subdomain>.workers.dev`.
-   Every push to `main` re-deploys automatically.
+4. **Deploy.** Your address is `https://ilm-brief.<your-subdomain>.workers.dev`.
+   Every push to `main` redeploys automatically.
 
-Manual alternative from your PC: `npx wrangler deploy` in this folder.
+---
+
+## Save my map (phones and laptops)
+
+On the results page, the participant's name is already filled in (they can
+edit it). **Save my map** builds two files **on the device**: a two-page A4
+**PDF report** (page 1: map and score guide; page 2: the five rooms) and a
+**phone-sized PNG image** for Photos.
+
+- **Phones:** the button opens the share menu: Save to Files, Save Image, or
+  WhatsApp/email to themselves.
+- **Laptops:** both files download.
+- Smaller links save just the PDF, just the image, or print.
+
+Nothing is uploaded: the files are made in the browser, and jsPDF is served
+from this site (no CDN), which fits the `script-src 'self'` policy.
 
 ---
 
 ## Troubleshooting
 
-**"Missing entry-point to Worker script or to assets directory".**
-`wrangler.toml` is missing the `[assets]` block. It must contain
-`[assets]` / `directory = "./public"` (the shipped file does).
+**Build fails with a name mismatch.** The Worker name in the dashboard must
+equal `name = "ilm-brief"` in `wrangler.toml`.
 
-**Build fails with a name mismatch / "Worker name does not match".**
-The Worker name in the dashboard must equal `name = "ilm-brief"` in
-`wrangler.toml`. Change one so they match, then retry.
+**"Missing entry-point to Worker script or to assets directory".** Check that
+`wrangler.toml` has `main = "src/worker.js"` and the `[assets]` block, and that
+`src/worker.js` was uploaded to GitHub.
 
-**Deployed page is a 404 or the README.**
-The `directory` in `[assets]` is wrong — it must point at `./public`.
+**Everyone sees the closed page.** Check the two dates in `wrangler.toml`: the
+format must be exactly `2026-10-19T15:00:00+08:00`. A typo keeps the site closed.
 
-**Build tries to run `npm install` / a framework build.**
-Clear the **Build command** field entirely; keep only the deploy command.
-
-**Fonts don't load / a security warning in the console.**
-The Content-Security-Policy in `public/_headers` already allows Google Fonts.
-If you host the fonts elsewhere, update the `style-src` / `font-src` lines.
+**Build tries to run `npm install`.** Clear the **Build command** field entirely.
 
 ---
 
@@ -147,27 +141,10 @@ If you host the fonts elsewhere, update the `style-src` / `font-src` lines.
 
 Everything lives in `public/index.html`:
 
-- **Items, verses, and bands** — the `DOMAINS` array near the top of the
-  `<script>` block. Each item is `{ t: "statement", s: "citation" }`; add
-  `r: true` to mark a reverse-scored item.
+- **Items, verses, and descriptions** — the `DOMAINS` array near the top of the
+  `<script>` block. Add `r: true` to mark a reverse-scored item.
 - **Scoring thresholds** — the `tierOf()` function.
-- **Colours, fonts, spacing** — the CSS variables in `:root` at the top of the
-  `<style>` block (`--ink`, `--brass`, the per-room hues, etc.).
-
-After editing, refresh locally to confirm, then commit and push (auto-deploys) or
-re-run `npx wrangler deploy`.
-
----
-
-## Notes
-
-- **Scoring formula:** the original paper form printed "÷ 7 × 5," which would
-  score the lowest answers highest. This app uses the **item mean (raw ÷ 7)**,
-  which is what the 1.0–5.0 reference bands actually describe.
-- **No LLM / no server:** all scoring runs in the visitor's browser. Cloudflare
-  only serves the static file; nothing is sent anywhere.
-- **Fonts** load from Google Fonts (Fraunces + Hanken Grotesk) with system
-  fallbacks, so the page still renders cleanly if fonts are blocked.
+- **Colours and fonts** — the CSS variables in `:root`.
 
 ---
 

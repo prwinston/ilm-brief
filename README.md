@@ -40,6 +40,10 @@ the two lines → **Commit changes**. Cloudflare redeploys within a minute or tw
 Change them here, not in the Cloudflare dashboard: each deploy resets dashboard
 variables to what's in this file.
 
+**The welcome-page banner** shows the same dates and the time left. The Worker
+writes them into the page, so there is nothing to edit in `index.html` when the
+dates change. (Opened as a local file, the banner simply stays hidden.)
+
 **Someone mid-assessment at closing time** can finish: the whole app is already
 loaded on their phone, and the report is made on the device.
 

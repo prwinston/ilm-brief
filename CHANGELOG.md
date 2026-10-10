@@ -6,6 +6,9 @@
   `OPEN_FROM` to `CLOSE_AT` in `wrangler.toml`: 9 Oct 2026, 12:00 am to 19 Oct 2026, 3:00 pm
   (Malaysia time). Outside it, visitors see an "Opening soon" or "This edition has now closed" page.
 - Mistyped dates keep the site closed rather than open.
+- Welcome-page banner showing the open and close dates (Malaysia time) and the time left
+  ("Closes in 9 days", "Closes tomorrow at 3:00 pm", "Closes today at 3:00 pm"); turns orange in
+  the last 36 hours. The Worker writes the dates in, so the banner always matches `wrangler.toml`.
 - Name required before starting (in "Before you begin"), carried into the report and saved files.
 
 **Changed**

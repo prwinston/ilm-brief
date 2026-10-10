@@ -23,7 +23,18 @@ export default {
       (open === null || now >= open) &&
       (close === null || now < close);
 
-    if (isOpen) return env.ASSETS.fetch(request);
+    if (isOpen) {
+      const res = await env.ASSETS.fetch(request);
+      // Hand the window dates to the welcome-page banner (#accessNotice), so the
+      // banner always matches wrangler.toml with nothing to edit in the page.
+      if (!(res.headers.get('Content-Type') || '').includes('text/html')) return res;
+      return new HTMLRewriter().on('#accessNotice', {
+        element(e) {
+          if (typeof open === 'number')  e.setAttribute('data-open',  String(open));
+          if (typeof close === 'number') e.setAttribute('data-close', String(close));
+        }
+      }).transform(res);
+    }
 
     if (open === 'bad' || close === 'bad') {
       console.error('Access window misconfigured:', { OPEN_FROM: env.OPEN_FROM, CLOSE_AT: env.CLOSE_AT });

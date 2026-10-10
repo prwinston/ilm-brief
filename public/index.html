@@ -71,6 +71,21 @@
   .dtitle{display:flex; align-items:center; gap:14px;}
   .hero .rooms .rm{display:inline-flex; align-items:center; gap:8px;}
 
+  /* ---------- Access window banner ---------- */
+  .access-notice{margin-top:28px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+    background:var(--paper-lift); border:1px solid var(--stone-soft); border-left:6px solid var(--brass);
+    border-radius:12px; padding:14px 20px; box-shadow:var(--shadow); font-size:16.5px; line-height:1.45; color:var(--text);}
+  .access-notice[hidden]{display:none;}
+  .access-notice + .hero{margin-top:14px;}
+  .access-notice .an-ico{flex:none; width:36px; height:36px; border-radius:50%; background:var(--brass); color:#fff; display:flex; align-items:center; justify-content:center;}
+  .access-notice .an-body{flex:1; min-width:220px;}
+  .access-notice .an-label{display:block; font-size:13.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--brass-deep);}
+  .access-notice .an-dates{font-weight:600;}
+  .access-notice .an-left{flex:none; font-weight:700; font-size:15px; padding:6px 14px; border-radius:20px; background:#EFE9D4; color:#7A6524; white-space:nowrap;}
+  .access-notice.soon{border-left-color:var(--furnace);}
+  .access-notice.soon .an-ico{background:var(--furnace);}
+  .access-notice.soon .an-left{background:#F3E0DA; color:#8A3F23;}
+
   /* ---------- Welcome ---------- */
   .hero{background:var(--ink); color:#EDECE4; border-radius:14px; padding:52px 40px 44px; margin-top:40px; box-shadow:var(--shadow); position:relative; overflow:hidden;}
   .hero .eyebrow{font-family:var(--serif); font-style:italic; font-size:20.5px; color:#C9B98F; margin-bottom:18px;}
@@ -260,6 +275,7 @@
 
   <!-- ================= WELCOME ================= -->
   <section id="welcome" class="screen active">
+    <div id="accessNotice" class="access-notice" role="status" hidden></div>
     <div class="hero">
       <div class="eyebrow">Brief Edition · A self-reflection map</div>
       <h1>Interior Life Mapping</h1>
@@ -919,6 +935,42 @@ function shade(hex, pct){
   return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
 }
 renderRoomsRow();
+
+/* ============ ACCESS WINDOW BANNER (dates are written in by the Worker) ============ */
+(function accessNotice(){
+  const box = el('accessNotice'); if(!box) return;
+  const open = Number(box.dataset.open) || null, close = Number(box.dataset.close) || null;
+  if(!open && !close) return;                         // no window set (or opened as a local file)
+  const MYT = 8*60*60*1000, MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const parts = ms=>{ const d = new Date(ms + MYT); return { y:d.getUTCFullYear(), mo:d.getUTCMonth(), d:d.getUTCDate(), h:d.getUTCHours(), mi:d.getUTCMinutes() }; };
+  const clock = p=>{ const h = p.h % 12 || 12; return `${h}:${String(p.mi).padStart(2,'0')} ${p.h >= 12 ? 'pm' : 'am'}`; };
+  const dayNo = ms=>Math.floor((ms + MYT) / 86400000);
+  const date = (ms, withYear)=>{ const p = parts(ms); return `${p.d} ${MON[p.mo]}${withYear ? ' ' + p.y : ''}, ${clock(p)}`; };
+  const sameYear = open && close && parts(open).y === parts(close).y;
+  const dates = open && close ? `${date(open, !sameYear)} – ${date(close, true)}`
+              : close ? `Until ${date(close, true)}` : `From ${date(open, true)}`;
+  const ico = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+  function leftText(){
+    if(!close) return '';
+    const now = Date.now(), ms = close - now, at = clock(parts(close));
+    if(ms <= 0) return 'Now closed — you can still finish';
+    if(ms < 60*60000){ const m = Math.max(1, Math.ceil(ms/60000)); return `Closes in ${m} minute${m>1?'s':''}`; }
+    const days = dayNo(close) - dayNo(now);
+    if(days <= 0) return `Closes today at ${at}`;
+    if(days === 1) return `Closes tomorrow at ${at}`;
+    return `Closes in ${days} days`;
+  }
+  function render(){
+    const left = leftText(), soon = close && (close - Date.now()) < 86400000*1.5;
+    box.classList.toggle('soon', !!soon);
+    box.innerHTML = `<span class="an-ico">${ico}</span>
+      <span class="an-body"><span class="an-label">Assessment open</span>
+      <span class="an-dates">${dates}</span> <span style="color:var(--text-mute)">(Malaysia time)</span></span>
+      ${left ? `<span class="an-left">${left}</span>` : ''}`;
+    box.hidden = false;
+  }
+  render(); setInterval(render, 60000);
+})();
 </script>
 </body>
 </html>
